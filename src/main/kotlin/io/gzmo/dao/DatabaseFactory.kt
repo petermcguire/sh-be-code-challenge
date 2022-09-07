@@ -18,7 +18,7 @@ object DatabaseFactory {
             SchemaUtils.create(Rates)
         }
     }
-    // utility function that will run each query in a coroutine so they don't block
+    // utility function that will run each query in a coroutine so that they don't block
     suspend fun <T> dbQuery(block: suspend () -> T): T =
         newSuspendedTransaction(Dispatchers.IO) { block() }
 }

@@ -1,6 +1,7 @@
 import io.gzmo.dao.dao
 import io.ktor.server.application.Application
 import io.ktor.server.application.call
+import io.ktor.server.request.receive
 import io.ktor.server.response.respond
 import io.ktor.server.response.respondText
 import io.ktor.server.routing.get
@@ -15,7 +16,8 @@ fun Application.ratesRoutes() {
                 call.respond(dao.allRates())
             }
             put {
-                call.respondText("PUT /rates")
+                val rates = call.receive<AllRates>()
+                call.respond(dao.updateRates(rates))
             }
         }
     }
