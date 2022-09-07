@@ -17,6 +17,13 @@ class DAOFacadeImpl : DAOFacade {
         price = row[Rates.price],
     )
 
+    private fun truncateRates(): Int {
+        val conn = TransactionManager.current().connection
+        val query = "TRUNCATE TABLE rates"
+        val statement = conn.prepareStatement(query, false)
+        return statement.executeUpdate()
+    }
+
     override suspend fun allRates(): AllRates = dbQuery {
         AllRates(
             rates = Rates.selectAll().map(::resultRowToRate)
@@ -25,10 +32,7 @@ class DAOFacadeImpl : DAOFacade {
 
     override suspend fun updateRates(rates: AllRates): AllRates = dbQuery {
         // truncate rates table
-        val conn = TransactionManager.current().connection
-        val query = "TRUNCATE TABLE rates"
-        val statement = conn.prepareStatement(query, false)
-        val result = statement.executeUpdate()
+        truncateRates()
         // add new rates
         val rates = rates.rates
         AllRates(

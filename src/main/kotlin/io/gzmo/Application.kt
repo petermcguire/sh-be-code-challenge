@@ -17,7 +17,7 @@ fun Application.module() {
     install(ContentNegotiation) {
         json()
     }
-    // connect to db
+    // initialize database
     DatabaseFactory.init()
     // set up routes
     ratesRoutes()
