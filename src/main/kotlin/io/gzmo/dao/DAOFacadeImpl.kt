@@ -5,6 +5,7 @@ import DatabaseFactory.dbQuery
 import NewRates
 import Rate
 import Rates
+import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.batchInsert
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.selectAll
@@ -15,19 +16,41 @@ import java.time.format.DateTimeFormatter
 class DAOFacadeImpl : DAOFacade {
     private fun ratesToAllRates(): AllRates {
         class _Rate(
-            val days: List<String>,
+            val days: MutableList<String>,
             val times: String,
             val tz: String,
             val price: Int,
         )
         val rates: MutableList<_Rate> = mutableListOf()
-        Rates.slice(Rates.price).selectAll().withDistinct().forEach{
-            val price = it[Rates.price]
-            Rates.select{Rates.price eq price}.forEach{
+        val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("HHmm")
 
+        Rates.slice(listOf(Rates.start, Rates.finish, Rates.price)).selectAll().withDistinct().forEach { distinctTimes ->
+            var rate = _Rate(
+                days = mutableListOf(),
+                times = distinctTimes[Rates.start].format(formatter) + "-" + distinctTimes[Rates.finish].format(formatter),
+                tz = "America/Chicago",
+                price = distinctTimes[Rates.price],
+            )
+            Rates.select {
+                (Rates.start eq distinctTimes[Rates.start]) and
+                (Rates.finish eq distinctTimes[Rates.finish]) and
+                (Rates.price eq distinctTimes[Rates.price])}.forEach { result ->
+                    rate.days.add(result[Rates.day])
             }
+            rates.add(rate)
         }
-        return AllRates(rates=rates.map { it[Rate.] = _Rate })
+
+        return AllRates(
+            rates = rates.map{
+                Rate(
+                    days = it.days.joinToString(","),
+                    times = it.times,
+                    tz = it.tz,
+                    price = it.price,
+                )
+            }
+        )
+
     }
 
     private fun allRatesToListOfNewRates(allRates: AllRates): List<NewRates> {
@@ -46,7 +69,7 @@ class DAOFacadeImpl : DAOFacade {
                     NewRates(
                         day = day,
                         start = LocalTime.parse(times[0], formatter),
-                        end = LocalTime.parse(times[1], formatter),
+                        finish = LocalTime.parse(times[1], formatter),
                         price = rate.price,
                     )
                 )
@@ -76,7 +99,7 @@ class DAOFacadeImpl : DAOFacade {
             Rates.batchInsert(listOfNewRates) {
                 this[Rates.day] = it.day
                 this[Rates.start] = it.start
-                this[Rates.end] = it.end
+                this[Rates.finish] = it.finish
                 this[Rates.price] = it.price
             }
         }

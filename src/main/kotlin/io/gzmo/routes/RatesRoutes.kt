@@ -16,7 +16,7 @@ fun Application.ratesRoutes() {
             }
             put {
                 val rates = call.receive<AllRates>()
-//                call.respond()
+                call.respond(dao.updateRates(rates))
             }
         }
     }

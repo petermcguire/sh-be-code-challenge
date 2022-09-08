@@ -19,13 +19,13 @@ data class AllRates(
 data class NewRates(
     val day: String,
     val start: LocalTime,
-    val end: LocalTime,
+    val finish: LocalTime,
     val price: Int,
 )
 
 object Rates: IntIdTable(){
     val day = varchar("day", 128)
     val start = time("start")
-    val end = time("end")
+    val finish = time("finish")
     val price = integer("price")
 }
