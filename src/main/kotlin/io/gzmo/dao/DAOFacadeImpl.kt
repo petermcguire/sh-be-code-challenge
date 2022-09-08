@@ -3,6 +3,7 @@ package io.gzmo.dao
 import AllRates
 import DatabaseFactory.dbQuery
 import NewRates
+import Price
 import Rate
 import Rates
 import org.jetbrains.exposed.sql.and
@@ -11,6 +12,7 @@ import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.TransactionManager
 import java.time.LocalTime
+import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
 class DAOFacadeImpl : DAOFacade {
@@ -103,6 +105,12 @@ class DAOFacadeImpl : DAOFacade {
                 this[Rates.price] = it.price
             }
         }
+    }
+
+    override suspend fun priceForRange(start: ZonedDateTime, end: ZonedDateTime): Price {
+        println(start)
+        println(end)
+        return Price(price = 1000)
     }
 }
 
