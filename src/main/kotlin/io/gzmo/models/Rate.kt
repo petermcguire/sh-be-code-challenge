@@ -1,5 +1,7 @@
 import kotlinx.serialization.Serializable
 import org.jetbrains.exposed.dao.id.IntIdTable
+import org.jetbrains.exposed.sql.javatime.time
+import java.time.LocalTime
 
 @Serializable
 data class Rate(
@@ -14,9 +16,16 @@ data class AllRates(
     val rates: List<Rate>,
 )
 
+data class NewRates(
+    val day: String,
+    val start: LocalTime,
+    val end: LocalTime,
+    val price: Int,
+)
+
 object Rates: IntIdTable(){
-    val days = varchar("days", 128)
-    val times = varchar("times", 128)
-    val tz = varchar("tz", 128)
+    val day = varchar("day", 128)
+    val start = time("start")
+    val end = time("end")
     val price = integer("price")
 }
