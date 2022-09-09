@@ -12,10 +12,20 @@ import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.TransactionManager
 import java.time.LocalTime
+import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
 class DAOFacadeImpl : DAOFacade {
+    private val dayTranslator: Map<String, String> = mapOf(
+        "MONDAY" to "mon",
+        "TUESDAY" to "tues",
+        "WEDNESDAY" to "wed",
+        "THURSDAY" to "thurs",
+        "FRIDAY" to "fri",
+        "SATURDAY" to "sat",
+        "SUNDAY" to "sun",
+    )
     private fun ratesToAllRates(): AllRates {
         class _Rate(
             val days: MutableList<String>,
@@ -108,9 +118,21 @@ class DAOFacadeImpl : DAOFacade {
     }
 
     override suspend fun priceForRange(start: ZonedDateTime, end: ZonedDateTime): Price {
-        println(start)
-        println(end)
-        return Price(price = 1000)
+        val zonedStart = start.withZoneSameInstant(ZoneId.of("America/Chicago"))
+        val zonedEnd = end.withZoneSameInstant(ZoneId.of("America/Chicago"))
+        val day: String = dayTranslator[zonedStart.dayOfWeek.toString()]!!
+        var price = 0
+        dbQuery {
+            Rates.select{
+                (Rates.day eq day) and
+                (Rates.start lessEq zonedStart.toLocalTime())  and
+                (Rates.finish greaterEq zonedEnd.toLocalTime())
+            }.forEach {
+                println(it)
+                price = it[Rates.price]
+            }
+        }
+        return  Price(price = price)
     }
 }
 
