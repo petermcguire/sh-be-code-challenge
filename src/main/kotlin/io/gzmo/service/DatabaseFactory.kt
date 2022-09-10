@@ -1,4 +1,4 @@
-import io.gzmo.dao.dao
+import io.gzmo.service.dao
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
@@ -9,20 +9,26 @@ import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransacti
 import org.jetbrains.exposed.sql.transactions.transaction
 
 object DatabaseFactory {
+
     fun init() {
         // connect
-        val driverClassName = "org.postgresql.Driver"
-        val jdbcURL = "jdbc:postgresql://localhost:5432/spothero"
-        val user = "postgres"
-        val password = "docker"
-        Database.connect(jdbcURL, driverClassName, user, password)
+        connect()
         // build
         build()
         // seed
         seed("seed.json")
     }
 
-    private fun build() {
+    fun connect() {
+        // connect
+        val driverClassName = "org.postgresql.Driver"
+        val jdbcURL = "jdbc:postgresql://localhost:5432/spothero"
+        val user = "postgres"
+        val password = "docker"
+        Database.connect(jdbcURL, driverClassName, user, password)
+    }
+
+    fun build() {
         // build db if not already done so
         transaction {
             // drop table
@@ -32,7 +38,7 @@ object DatabaseFactory {
         }
     }
 
-    private fun seed(seedFile: String) {
+    fun seed(seedFile: String) {
         // load seed file from resources
         val jsonString: String = this.javaClass.classLoader.getResource(seedFile).readText()
         // get AllRates

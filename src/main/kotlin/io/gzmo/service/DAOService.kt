@@ -1,4 +1,4 @@
-package io.gzmo.dao
+package io.gzmo.service
 
 import AllRates
 import DatabaseFactory.dbQuery
@@ -16,7 +16,8 @@ import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
-class DAOFacadeImpl : DAOFacade {
+class DAOService {
+
     private val dayTranslator: Map<String, String> = mapOf(
         "MONDAY" to "mon",
         "TUESDAY" to "tues",
@@ -26,7 +27,9 @@ class DAOFacadeImpl : DAOFacade {
         "SATURDAY" to "sat",
         "SUNDAY" to "sun",
     )
+
     private fun ratesToAllRates(): AllRates {
+
         class _Rate(
             val days: MutableList<String>,
             val times: String,
@@ -36,7 +39,9 @@ class DAOFacadeImpl : DAOFacade {
         val rates: MutableList<_Rate> = mutableListOf()
         val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("HHmm")
 
+        // start, finish and price make for unique rates
         Rates.slice(listOf(Rates.start, Rates.finish, Rates.price)).selectAll().withDistinct().forEach { distinctTimes ->
+            // intermediary rate type with list of days for convenience
             var rate = _Rate(
                 days = mutableListOf(),
                 times = distinctTimes[Rates.start].format(formatter) + "-" + distinctTimes[Rates.finish].format(formatter),
@@ -53,6 +58,7 @@ class DAOFacadeImpl : DAOFacade {
         }
 
         return AllRates(
+            // map back to rates with single string for days
             rates = rates.map{
                 Rate(
                     days = it.days.joinToString(","),
@@ -62,14 +68,13 @@ class DAOFacadeImpl : DAOFacade {
                 )
             }
         )
-
     }
 
     private fun allRatesToListOfNewRates(allRates: AllRates): List<NewRates> {
+
         val rates = allRates.rates
         val listOfNewRates: MutableList<NewRates> = mutableListOf()
         val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("HHmm")
-
 
         for (rate in rates) {
             // get days list
@@ -91,17 +96,18 @@ class DAOFacadeImpl : DAOFacade {
     }
 
     private fun truncateRates(): Int {
+
         val conn = TransactionManager.current().connection
         val query = "TRUNCATE TABLE rates"
         val statement = conn.prepareStatement(query, false)
         return statement.executeUpdate()
     }
 
-    override suspend fun allRates(): AllRates = dbQuery {
+    suspend fun allRates(): AllRates = dbQuery {
         ratesToAllRates()
     }
 
-    override suspend fun updateRates(rates: AllRates) {
+    suspend fun updateRates(rates: AllRates) {
         dbQuery {
             // truncate rates table
             truncateRates()
@@ -117,11 +123,13 @@ class DAOFacadeImpl : DAOFacade {
         }
     }
 
-    override suspend fun priceForRange(start: ZonedDateTime, end: ZonedDateTime): Price {
+    suspend fun priceForRange(start: ZonedDateTime, end: ZonedDateTime): Price {
+
         val zonedStart = start.withZoneSameInstant(ZoneId.of("America/Chicago"))
         val zonedEnd = end.withZoneSameInstant(ZoneId.of("America/Chicago"))
-        val day: String = dayTranslator[zonedStart.dayOfWeek.toString()]!!
+        val day = dayTranslator[zonedStart.dayOfWeek.toString()]!!
         var price = 0
+
         dbQuery {
             Rates.select{
                 (Rates.day eq day) and
@@ -136,4 +144,4 @@ class DAOFacadeImpl : DAOFacade {
     }
 }
 
-val dao: DAOFacade = DAOFacadeImpl()
+val dao: DAOService = DAOService()
