@@ -123,24 +123,25 @@ class DAOService {
         }
     }
 
-    suspend fun priceForRange(start: ZonedDateTime, end: ZonedDateTime): Price {
+    suspend fun priceForRange(start: ZonedDateTime, end: ZonedDateTime): Price? {
 
         val zonedStart = start.withZoneSameInstant(ZoneId.of("America/Chicago"))
         val zonedEnd = end.withZoneSameInstant(ZoneId.of("America/Chicago"))
         val day = dayTranslator[zonedStart.dayOfWeek.toString()]!!
         var price = 0
 
-        dbQuery {
+        return dbQuery {
             Rates.select{
                 (Rates.day eq day) and
                 (Rates.start lessEq zonedStart.toLocalTime())  and
                 (Rates.finish greaterEq zonedEnd.toLocalTime())
-            }.forEach {
-                println(it)
-                price = it[Rates.price]
-            }
+            }.map{
+                Price(
+                    price = it[Rates.price]
+                )
+            }.singleOrNull()
         }
-        return  Price(price = price)
+//        return  Price(price = price)
     }
 }
 
