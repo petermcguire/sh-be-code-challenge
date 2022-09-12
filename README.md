@@ -14,24 +14,107 @@ If you want to run tests inside of Intellij, make sure to run the DB using `dock
 
 ## API Doc
 
-### Get list of Things
+### Get rates
 
 #### Request
 
-`GET /thing/`
+`GET /rates`
 
-    curl -i -H 'Accept: application/json' http://localhost:7000/thing/
+    http://localhost:5000/rates
 
 #### Response
 
     HTTP/1.1 200 OK
-    Date: Thu, 24 Feb 2011 12:36:30 GMT
-    Status: 200 OK
-    Connection: close
     Content-Type: application/json
-    Content-Length: 2
 
-    []
+    {
+       "rates":[
+          {
+             "days":"mon,tues,thurs",
+             "times":"0900-2100",
+             "tz":"America/Chicago",
+             "price":1500
+          },
+          {
+             "days":"sun,tues",
+             "times":"0100-0700",
+             "tz":"America/Chicago",
+             "price":925
+          },
+          {
+             "days":"mon,wed,sat",
+             "times":"0100-0500",
+             "tz":"America/Chicago",
+             "price":1000
+          },
+          {
+             "days":"fri,sat,sun",
+             "times":"0900-2100",
+             "tz":"America/Chicago",
+             "price":2000
+          },
+          {
+             "days":"wed",
+             "times":"0600-1800",
+             "tz":"America/Chicago",
+             "price":1750
+          }
+       ]
+    }
+
+### Put rates
+
+#### Request
+
+`PUT /rates`
+
+    http://localhost:5000/rates
+
+    {
+       "rates":[
+          {
+             "days":"mon,tues,thurs",
+             "times":"0900-2100",
+             "tz":"America/Chicago",
+             "price":1500
+          },
+          {
+             "days":"sun,tues",
+             "times":"0100-0700",
+             "tz":"America/Chicago",
+             "price":925
+          },
+          {
+             "days":"mon,wed,sat",
+             "times":"0100-0500",
+             "tz":"America/Chicago",
+             "price":1000
+          },
+       ]
+    }
+    
+
+#### Response
+
+    HTTP/1.1 200 OK
+    Content-Type: application/json
+
+    {}
+
+### Get price
+
+`GET /price`
+
+    http://localhost:5000/price?start=2022-09-10T10:00:00-05:00&end=2022-09-10T12:43:00-05:00
+
+#### Response
+
+    HTTP/1.1 200 OK
+    Content-Type: application/json
+
+    {
+        "price": 2000
+    }
 
 ## Notes
 
