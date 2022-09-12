@@ -141,7 +141,6 @@ class DAOService {
                 )
             }.singleOrNull()
         }
-//        return  Price(price = price)
     }
 }
 

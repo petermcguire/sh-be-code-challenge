@@ -72,6 +72,22 @@ internal class DAOServiceTest {
     }
 
     @Test
+    fun `priceForRange should convert times to central time`() = runBlocking{
+
+        // start and end on September 8th (Thursday) between 22:00 and 23:00 Calcutta time
+        val start = ZonedDateTime.parse("2022-09-08T22:00:00.000+05:30[Asia/Calcutta]")
+        val end = ZonedDateTime.parse("2022-09-08T23:00:00.000+05:30[Asia/Calcutta]")
+
+        // which is between 11:30 and 12:30 Thursday central time, so expecting 1500
+        val expectedPrice = Price(price = 1500)
+
+        val actual = testDAOService.priceForRange(start, end)
+        assertThat(actual).isEqualTo(expectedPrice)
+
+        Unit
+    }
+
+    @Test
     fun `priceForRange should return null for given invalid range`() = runBlocking{
 
         // start and end on a wednesday between 14:00 and 19:00 central time

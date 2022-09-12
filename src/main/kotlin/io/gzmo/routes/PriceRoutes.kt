@@ -8,6 +8,8 @@ import io.ktor.server.routing.get
 import io.ktor.server.routing.route
 import io.ktor.server.routing.routing
 import java.time.ZonedDateTime
+import java.time.format.DateTimeParseException
+
 
 fun Application.priceRoutes() {
 
@@ -16,11 +18,16 @@ fun Application.priceRoutes() {
         route("/price") {
 
             get {
-                val start = ZonedDateTime.parse(call.request.queryParameters["start"])
-                val end = ZonedDateTime.parse(call.request.queryParameters["end"])
-                val priceForRange = dao.priceForRange(start, end)
-                if (priceForRange == null) call.respondText("unavailable", status = HttpStatusCode.NotFound)
-                else call.respond(priceForRange)
+                try {
+                    val start = ZonedDateTime.parse(call.request.queryParameters["start"])
+                    val end = ZonedDateTime.parse(call.request.queryParameters["end"])
+                    val priceForRange = dao.priceForRange(start, end)
+                    if (priceForRange == null) call.respondText("unavailable", status = HttpStatusCode.BadRequest)
+                    else call.respond(priceForRange)
+                } catch (e: DateTimeParseException) {
+                    // malformed datetime
+                    call.respondText("unavailable", status = HttpStatusCode.BadRequest)
+                }
             }
         }
     }
