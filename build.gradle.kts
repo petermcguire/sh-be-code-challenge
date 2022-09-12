@@ -16,6 +16,8 @@ plugins {
 
 group = "io.gzmo"
 version = "0.0.1"
+java.sourceCompatibility = JavaVersion.VERSION_11
+
 application {
     mainClass.set("io.ktor.server.netty.EngineMain")
 
@@ -49,6 +51,13 @@ dependencies {
 
 tasks.test {
     useJUnitPlatform()
+}
+
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
+    kotlinOptions {
+        freeCompilerArgs = listOf("-Xjsr305=strict")
+        jvmTarget = "11"
+    }
 }
 
 tasks.withType<Test> {
