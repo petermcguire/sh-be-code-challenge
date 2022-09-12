@@ -22,7 +22,7 @@
       "days": "mon,wed,sat",
       "times": "0100-0500",
       "tz": "America/Chicago",
-      "price": 1500
+      "price": 1000
     },
     {
       "days": "sun,tues",

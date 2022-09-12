@@ -88,11 +88,48 @@ internal class DAOServiceTest {
     }
 
     @Test
+    fun `priceForRange should return null for range spanning more than one day`() = runBlocking{
+
+        val start = ZonedDateTime.parse("2022-09-07T14:00:00.000-05:00[America/Chicago]")
+        val end = ZonedDateTime.parse("2022-09-09T19:00:00.000-05:00[America/Chicago]")
+
+        val actual = testDAOService.priceForRange(start, end)
+        assertThat(actual).isEqualTo(null)
+
+        Unit
+    }
+
+    @Test
+    fun `priceForRange should return null for range spanning more than one rate`() = runBlocking{
+
+        // wednesday from 03:00 to 12:00 spans the two wednesday rates
+        val start = ZonedDateTime.parse("2022-09-07T03:00:00.000-05:00[America/Chicago]")
+        val end = ZonedDateTime.parse("2022-09-07T12:00:00.000-05:00[America/Chicago]")
+
+        val actual = testDAOService.priceForRange(start, end)
+        assertThat(actual).isEqualTo(null)
+
+        Unit
+    }
+
+    @Test
     fun `priceForRange should return null for given invalid range`() = runBlocking{
 
         // start and end on a wednesday between 14:00 and 19:00 central time
         val start = ZonedDateTime.parse("2022-09-07T14:00:00.000-05:00[America/Chicago]")
         val end = ZonedDateTime.parse("2022-09-07T19:00:00.000-05:00[America/Chicago]")
+
+        val actual = testDAOService.priceForRange(start, end)
+        assertThat(actual).isEqualTo(null)
+
+        Unit
+    }
+
+    @Test
+    fun `priceForRange should return null for an end before a start`() = runBlocking{
+
+        val start = ZonedDateTime.parse("2022-09-07T14:00:00.000-05:00[America/Chicago]")
+        val end = ZonedDateTime.parse("2022-09-07T12:00:00.000-05:00[America/Chicago]")
 
         val actual = testDAOService.priceForRange(start, end)
         assertThat(actual).isEqualTo(null)

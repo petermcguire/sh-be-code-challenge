@@ -30,16 +30,35 @@ object DatabaseFactory {
     }
 
     private fun connect() {
+        val host = System.getenv("POSTGRES_HOST")?: "localhost"
+        val port = System.getenv("POSTGRES_PORT")?: "5432"
+        val db = System.getenv("POSTGRES_DB")?: "spothero"
         // connect
         val driverClassName = "org.postgresql.Driver"
-        val jdbcURL = "jdbc:postgresql://localhost:5432/spothero"
-        val user = "postgres"
-        val password = "docker"
+        val jdbcURL = "jdbc:postgresql://$host:$port/$db"
+        val user = System.getenv("POSTGRES_USER")?: "postgres"
+        val password = System.getenv("POSTGRES_PASSWORD")?: "docker"
         Database.connect(jdbcURL, driverClassName, user, password)
+        // a very hacky way to wait until the db is up....  :(
+        var count = 0
+        val max = 10
+        while (true) {
+            try {
+                transaction {
+                    SchemaUtils.drop(Rates)
+                }
+                break
+            } catch (e: Exception) {
+                Thread.sleep(1000)
+                if (++count == max) {
+                    throw e
+                }
+            }
+        }
     }
 
     private fun build() {
-        // build db if not already done so
+
         transaction {
             // drop table
             SchemaUtils.drop(Rates)

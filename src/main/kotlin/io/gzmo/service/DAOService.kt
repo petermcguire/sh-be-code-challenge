@@ -15,6 +15,7 @@ import java.time.LocalTime
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
+import java.time.temporal.ChronoUnit.DAYS
 
 class DAOService {
 
@@ -30,19 +31,19 @@ class DAOService {
 
     private fun ratesToAllRates(): AllRates {
 
-        class _Rate(
+        class IntermediaryRate(
             val days: MutableList<String>,
             val times: String,
             val tz: String,
             val price: Int,
         )
-        val rates: MutableList<_Rate> = mutableListOf()
+        val rates: MutableList<IntermediaryRate> = mutableListOf()
         val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("HHmm")
 
         // start, finish and price make for unique rates
         Rates.slice(listOf(Rates.start, Rates.finish, Rates.price)).selectAll().withDistinct().forEach { distinctTimes ->
             // intermediary rate type with list of days for convenience
-            var rate = _Rate(
+            val rate = IntermediaryRate(
                 days = mutableListOf(),
                 times = distinctTimes[Rates.start].format(formatter) + "-" + distinctTimes[Rates.finish].format(formatter),
                 tz = "America/Chicago",
@@ -127,8 +128,18 @@ class DAOService {
 
         val zonedStart = start.withZoneSameInstant(ZoneId.of("America/Chicago"))
         val zonedEnd = end.withZoneSameInstant(ZoneId.of("America/Chicago"))
+
+        // check that start is not later than end
+        if (zonedStart > zonedEnd) {
+            return null
+        }
+
+        // check that period is less than a day
+        if (DAYS.between(zonedStart, zonedEnd) >= 1) {
+            return null
+        }
+
         val day = dayTranslator[zonedStart.dayOfWeek.toString()]!!
-        var price = 0
 
         return dbQuery {
             Rates.select{

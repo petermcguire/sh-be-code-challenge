@@ -1,0 +1,22 @@
+version: '3.9'
+
+services:
+  db:
+    container_name: take-home-db
+    image: postgres:14-alpine
+    restart: always
+    ports:
+      - "5432:5432"
+#    volumes:
+#      - ./sql/schema.sql:/docker-entrypoint-initdb.d/1-schema.sql
+#      - ./sql/data.sql:/docker-entrypoint-initdb.d/2-data.sql
+    env_file:
+      - .env.dev
+  api-server:
+    container_name: api-server
+    build: .
+    image: api-server:latest
+    ports:
+      - "5000:5000"
+    env_file:
+      - .env.dev
