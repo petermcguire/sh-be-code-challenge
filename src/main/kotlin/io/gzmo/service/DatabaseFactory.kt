@@ -10,16 +10,26 @@ import org.jetbrains.exposed.sql.transactions.transaction
 
 object DatabaseFactory {
 
+    var allRates: AllRates
+        private set
+
+    init {
+        // load seed file from resources
+        val jsonString: String = this.javaClass.classLoader.getResource("seed.json").readText()
+        // get AllRates
+        allRates = Json.decodeFromString(jsonString)
+    }
+
     fun init() {
         // connect
         connect()
         // build
         build()
         // seed
-        seed("seed.json")
+        seed()
     }
 
-    fun connect() {
+    private fun connect() {
         // connect
         val driverClassName = "org.postgresql.Driver"
         val jdbcURL = "jdbc:postgresql://localhost:5432/spothero"
@@ -28,7 +38,7 @@ object DatabaseFactory {
         Database.connect(jdbcURL, driverClassName, user, password)
     }
 
-    fun build() {
+    private fun build() {
         // build db if not already done so
         transaction {
             // drop table
@@ -38,13 +48,9 @@ object DatabaseFactory {
         }
     }
 
-    fun seed(seedFile: String) {
-        // load seed file from resources
-        val jsonString: String = this.javaClass.classLoader.getResource(seedFile).readText()
-        // get AllRates
-        val rates = Json.decodeFromString<AllRates>(jsonString)
+    private fun seed() {
         // submit rates to db
-        runBlocking { dao.updateRates(rates) }
+        runBlocking { dao.updateRates(allRates) }
     }
 
     // utility function that will run each query in a coroutine so that they don't block
