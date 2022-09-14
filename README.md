@@ -12,6 +12,8 @@ Run `make run-tests` in the root directory.
 
 If you want to run tests inside of Intellij, make sure to run the DB using `docker-compose start db`
 
+NOTE that `make run-tests` will use your system's Java version.  I've found that OpenJDK 16 and 18 are compatible with these tests, and Java 8 is not. 
+
 ## API Doc
 
 ### Get rates
@@ -115,7 +117,3 @@ If you want to run tests inside of Intellij, make sure to run the DB using `dock
     {
         "price": 2000
     }
-
-## Notes
-
-This could certainly be improved.  I'm an early learner of Kotlin so I'm not sure how "correct" or idiomatic this code is.
